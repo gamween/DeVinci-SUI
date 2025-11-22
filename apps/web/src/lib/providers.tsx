@@ -4,6 +4,7 @@ import { SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { networkConfig } from "./networkConfig";
 import { useState, ReactNode } from "react";
+import { NotificationProvider } from "./NotificationContext";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -12,7 +13,9 @@ export function Providers({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
         <WalletProvider autoConnect>
-          {children}
+          <NotificationProvider>
+            {children}
+          </NotificationProvider>
         </WalletProvider>
       </SuiClientProvider>
     </QueryClientProvider>

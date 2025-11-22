@@ -220,87 +220,83 @@ Sources
 
 voici l'architectrure du projet plus ou moins : 
 devinci-sui/
+devinci-sui/
 │
 ├── contracts/
 │   └── sui-bounties/
 │        ├── Move.toml
 │        ├── sources/
-│        │    ├── bounty.move             # Module principal pour les bounties (création, acceptation, complétion)
-│        │    ├── reward_distribution.move # Gestion des paiements/récompenses automatisés
-│        │    ├── donation.move            # Module donation entre viewers et streamers
-│        │    └── user_registry.move       # Registry des utilisateurs (mapping Twitch/Sui)
+│        │    ├── bounty.move                  # PRIORITÉ 1 - Contrats streamer/dev
+│        │    └── donation_split.move          # PRIORITÉ 1 - Fusion donation + reward distribution avec splits automatiques
 │        └── tests/
-│             ├── bounty_tests.move        # Tests unitaires des fonctions bounties
-│             └── donation_tests.move      # Tests donation
+│             └── bounty_tests.move            # Tests minimaux (2-3 tests core)
 │
 ├── apps/
 │   ├── api/
 │   │    ├── src/
 │   │    │    ├── routes/
-│   │    │    │    ├── auth.routes.ts
-│   │    │    │    ├── bounty.routes.ts
-│   │    │    │    ├── twitch.routes.ts
-│   │    │    │    └── donation.routes.ts
+│   │    │    │    ├── auth.routes.ts          # OAuth Twitch simple
+│   │    │    │    ├── bounty.routes.ts        # CRUD bounties
+│   │    │    │    ├── donation.routes.ts      # Trigger smart contract splits
+│   │    │    │    └── twitch.routes.ts        # Fetch stream info uniquement
 │   │    │    ├── services/
-│   │    │    │    ├── auth.service.ts
-│   │    │    │    ├── bounty.service.ts
-│   │    │    │    ├── twitch-webhook.service.ts
-│   │    │    │    └── donation.service.ts
+│   │    │    │    ├── bounty.service.ts       # Logique métier + appels smart contract
+│   │    │    │    ├── donation.service.ts     # Appels smart contract donation_split
+│   │    │    │    └── twitch-api.service.ts   # Fusion auth + API calls Twitch
 │   │    │    ├── web3/
-│   │    │    │    └── sui-client.ts       # Wrapper SDK Sui
+│   │    │    │    └── sui-client.ts           # Client Sui unifié
 │   │    │    └── db/
-│   │    │         ├── models.ts
-│   │    │         └── prisma/             # ORM config
+│   │    │         ├── models.ts               # Mapping Twitch/Sui addresses (remplace user_registry.move)
+│   │    │         └── prisma/
 │   │    └── package.json
 │
 │   ├── web/
 │   │    ├── src/
 │   │    │    ├── pages/
-│   │    │    │    ├── index.tsx
+│   │    │    │    ├── index.tsx               # Landing page
+│   │    │    │    ├── auth/
+│   │    │    │    │    └── callback.tsx       # OAuth redirect
 │   │    │    │    ├── dev/
-│   │    │    │    │    └── bounties.tsx   # Vue dédiées aux devs pour poster/voir bounties
-│   │    │    │    └── streamer/
-│   │    │    │         └── dashboard.tsx  # Tableau de bord streamer
+│   │    │    │    │    └── bounties.tsx       # Devs postent bounties
+│   │    │    │    ├── streamer/
+│   │    │    │    │    └── dashboard.tsx      # Streamers voient/acceptent bounties
+│   │    │    │    └── viewer/
+│   │    │    │         └── [streamerId].tsx   # NOUVEAU - Twitch iframe + donation widget
 │   │    │    ├── components/
+│   │    │    │    ├── ui/                     # shadcn/ui components directement ici
+│   │    │    │    ├── BountyCard.tsx
+│   │    │    │    └── DonationWidget.tsx      # Widget donation avec split display
 │   │    │    ├── hooks/
+│   │    │    │    └── useSuiWallet.ts
 │   │    │    └── lib/
+│   │    │         └── sui.ts                  # Helper functions Sui SDK
 │   │    └── package.json
 │
-│   └── twitch-extension/
-│        ├── frontend/
-│        │    ├── viewer.html
-│        │    ├── viewer.js
-│        │    ├── config.html
-│        │    ├── config.js
-│        │    └── styles.css
-│        └── backend/
-│             ├── index.ts
-│             ├── routes/
-│             │    └── donation.routes.ts  # API donation côté extension
-│             └── utils/
-│                  └── twitch-jwt.ts       # Gestion auth Twitch extension
-│        └── package.json
-│
 ├── packages/
-│   ├── ui/
-│   │    └── src/
-│   │         ├── components/
-│   │         └── index.ts
-│   ├── core/
+│   ├── shared/                                 # Renommé de "core"
 │   │    └── src/
 │   │         ├── types/
 │   │         │    ├── bounty.ts
+│   │         │    ├── donation.ts
 │   │         │    └── user.ts
-│   │         ├── utils/
+│   │         ├── constants/
+│   │         │    └── contracts.ts            # Adresses smart contracts
 │   │         └── index.ts
-│   └── web3/
+│   └── web3-sdk/                              # Renommé de "web3"
 │        └── src/
-│             ├── suiClient.ts
-│             ├── bounty.ts
-│             └── donation.ts
+│             ├── client.ts                    # Client Sui configuré
+│             ├── bounty.service.ts            # Fonctions interaction bounty.move
+│             ├── donation.service.ts          # Fonctions interaction donation_split.move
+│             └── index.ts
 │
-├── infra/
-│   ├── docker/
-│   └── k8s/
 └── .vscode/
 
+# SUPPRIMÉ :
+# - packages/ui/ (utiliser shadcn/ui direct dans web)
+# - apps/twitch-extension/ (remplacé par apps/web/pages/viewer/)
+# - infra/ (docker, k8s - over-engineering pour hackathon)
+# - contracts/.../reward_distribution.move (fusionné dans donation_split.move)
+# - contracts/.../user_registry.move (déplacé en DB)
+# - contracts/.../tests/donation_tests.move (tests minimaux dans bounty_tests.move suffit)
+# - apps/api/.../auth.service.ts (fusionné dans twitch-api.service.ts)
+# - apps/api/.../twitch-webhook.service.ts (scope trop large pour 22h)

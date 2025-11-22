@@ -6,7 +6,28 @@ Le système d'authentification Twitch est **100% implémenté** mais nécessite 
 
 ---
 
-## 📝 Étapes à Suivre (5 minutes)
+## 📝 Étapes à Suivre (10 minutes)
+
+### 0️⃣ **NOUVEAU** : Configurer HTTPS Local (Obligatoire)
+
+⚠️ **IMPORTANT** : Twitch nécessite **HTTPS** même en développement local depuis 2024.
+
+```bash
+# Depuis apps/web/
+cd apps/web
+
+# Exécuter le script de configuration HTTPS
+pnpm setup-https
+
+# Lance le serveur HTTPS
+pnpm dev:https
+```
+
+Le serveur sera accessible sur **https://localhost:3000**
+
+💡 Si tu vois un avertissement de certificat, c'est normal (certificat auto-signé). Clique sur "Avancé" puis "Continuer vers localhost".
+
+---
 
 ### 1️⃣ Créer l'Application Twitch
 
@@ -19,14 +40,14 @@ Le système d'authentification Twitch est **100% implémenté** mais nécessite 
 | Champ | Valeur |
 |-------|--------|
 | **Name** | `StreamSUI` ou `StreamSUI-Dev` |
-| **OAuth Redirect URLs** | `http://localhost:3000/auth/twitch/callback` |
+| **OAuth Redirect URLs** | `https://localhost:3000/auth/twitch/callback` |
 | **Category** | `Website Integration` |
 
-⚠️ **IMPORTANT** : L'URL de redirection doit être **EXACTEMENT** :
+⚠️ **IMPORTANT** : L'URL de redirection doit être **EXACTEMENT** (avec HTTPS) :
 ```
-http://localhost:3000/auth/twitch/callback
+https://localhost:3000/auth/twitch/callback
 ```
-(pas de slash à la fin, respecter la casse)
+(pas de slash à la fin, respecter la casse, **HTTPS obligatoire**)
 
 4. **Clique** sur **"Create"**
 
@@ -53,17 +74,23 @@ TWITCH_CLIENT_SECRET=your-twitch-client-secret-here
 # ✅ APRÈS (exemple - remplace par TES valeurs)
 NEXT_PUBLIC_TWITCH_CLIENT_ID=abc123def456xyz789
 TWITCH_CLIENT_SECRET=secret123uvw456xyz789
+
+# URL de redirection (HTTPS obligatoire)
+NEXT_PUBLIC_TWITCH_REDIRECT_URI=https://localhost:3000/auth/twitch/callback
+NEXT_PUBLIC_BASE_URL=https://localhost:3000
 ```
 
-### 5️⃣ Redémarrer le Serveur
+### 5️⃣ Lancer le Serveur HTTPS
 
 ```bash
 # Dans le terminal où tourne le serveur
 # Appuie sur Ctrl+C pour arrêter
 
-# Puis relance
-pnpm dev
+# Puis relance avec HTTPS (obligatoire pour Twitch)
+pnpm dev:https
 ```
+
+⚠️ **IMPORTANT** : Tu **dois** utiliser `pnpm dev:https` (pas `pnpm dev`) pour que Twitch OAuth fonctionne.
 
 ---
 
@@ -71,12 +98,14 @@ pnpm dev
 
 ### Test Rapide (2 minutes)
 
-1. **Ouvre** : http://localhost:3000
-2. **Connecte** ton wallet (WalletButton en haut à droite)
-3. **Clique** sur "Connexion Twitch" (bouton violet)
-4. **Tu devrais voir** : Page d'autorisation Twitch
-5. **Clique** sur "Authorize"
-6. **Tu devrais être redirigé** : Vers le callback avec ton username
+1. **Lance le serveur HTTPS** : `pnpm dev:https`
+2. **Ouvre** : https://localhost:3000 (⚠️ HTTPS, pas HTTP)
+3. **Accepte le certificat** : Clique "Avancé" → "Continuer vers localhost"
+4. **Connecte** ton wallet (WalletButton en haut à droite)
+5. **Clique** sur "Connexion Twitch" (bouton violet)
+6. **Tu devrais voir** : Page d'autorisation Twitch
+7. **Clique** sur "Authorize"
+8. **Tu devrais être redirigé** : Vers le callback avec ton username
 
 Si ça fonctionne, tu verras :
 - ✅ Loader élégant "Connexion en cours"
@@ -101,9 +130,11 @@ Si ça fonctionne, tu verras :
 **Cause** : L'URL de callback ne correspond pas
 
 **Solutions** :
-1. Dans Twitch Console : **EXACTEMENT** `http://localhost:3000/auth/twitch/callback`
-2. Dans `.env.local` : **EXACTEMENT** `http://localhost:3000/auth/twitch/callback`
-3. Pas d'espace, pas de slash à la fin, respecter http:// (pas https:// en local)
+1. Dans Twitch Console : **EXACTEMENT** `https://localhost:3000/auth/twitch/callback`
+2. Dans `.env.local` : **EXACTEMENT** `https://localhost:3000/auth/twitch/callback`
+3. Utiliser **HTTPS** (obligatoire depuis 2024)
+4. Lancer le serveur avec `pnpm dev:https` (pas `pnpm dev`)
+5. Pas d'espace, pas de slash à la fin
 
 ### Erreur : "Invalid client"
 
@@ -134,8 +165,10 @@ Avant de tester, assure-toi que :
 - [ ] Application Twitch créée sur https://dev.twitch.tv/console/apps
 - [ ] Client ID copié dans `apps/web/.env.local`
 - [ ] Client Secret copié dans `apps/web/.env.local`
-- [ ] Redirect URI = `http://localhost:3000/auth/twitch/callback` (dans Twitch Console)
-- [ ] Redirect URI = `http://localhost:3000/auth/twitch/callback` (dans `.env.local`)
+- [ ] HTTPS configuré avec `pnpm setup-https`
+- [ ] Certificats SSL générés dans `apps/web/certificates/`
+- [ ] Redirect URI = `https://localhost:3000/auth/twitch/callback` (dans Twitch Console)
+- [ ] Redirect URI = `https://localhost:3000/auth/twitch/callback` (dans `.env.local`)
 - [ ] Serveur redémarré après modification de `.env.local`
 - [ ] Aucune erreur dans la console au démarrage
 
@@ -151,15 +184,17 @@ Une fois configuré, tu auras :
    - 👁️ **Viewer** : DOIT connecter Twitch pour recevoir NFTs
 
 2. **Flow complet** :
+   - Serveur HTTPS local avec certificats mkcert
    - Connexion wallet Sui (zkLogin ou Slush)
    - Choix du rôle
-   - Connexion Twitch (si requis)
+   - Connexion Twitch OAuth (HTTPS)
    - Accès au dashboard
 
 3. **Persistence** :
    - Wallet reste connecté après refresh
    - Twitch reste connecté après refresh
    - Rôle sauvegardé
+   - Certificats SSL valides localement
 
 ---
 
@@ -186,10 +221,11 @@ Ouvre DevTools (F12) → Console pour voir ces logs.
 
 ## ⏱️ Temps Estimé
 
+- **Configuration HTTPS** : 2-3 minutes
 - **Configuration Twitch** : 3-5 minutes
 - **Éditer .env.local** : 1 minute
 - **Premier test** : 1 minute
-- **Total** : ~5-7 minutes
+- **Total** : ~7-10 minutes
 
 ---
 

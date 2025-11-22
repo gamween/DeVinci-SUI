@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:https": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
+    "setup-https": "bash setup-https.sh",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix"
   },

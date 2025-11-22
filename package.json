@@ -8,9 +8,12 @@
     "pnpm": ">=8.0.0"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "pnpm --filter \"./apps/web\" dev",
+    "dev:web": "pnpm --filter \"./apps/web\" dev",
+    "dev:api": "pnpm --filter \"./apps/api\" dev",
+    "build": "pnpm --filter \"./apps/web\" build",
+    "build:web": "pnpm --filter \"./apps/web\" build",
+    "build:api": "pnpm --filter \"./apps/api\" build",
     "lint": "eslint",
     "lint:fix": "eslint --fix"
   },

@@ -1,7 +1,17 @@
-// IPFS Ingest: RTMP → HLS → IPFS
-// TODO: Implémenter l'ingestion de streams RTMP et conversion en HLS
-// TODO: Upload des segments HLS vers IPFS
+// Stub IPFS ingest helper
+// TODO: implement add (pin) content to IPFS (e.g. via web3.storage, Pinata, or local daemon)
 
-export class IPFSIngest {
-  // Placeholder pour l'implémentation
+export interface IngestResult {
+  cid: string;
+  size: number;
+}
+
+export async function ingestBuffer(_data: Uint8Array): Promise<IngestResult> {
+  // Placeholder implementation
+  throw new Error('ingestBuffer not implemented');
+}
+
+export async function ingestJson(obj: unknown): Promise<IngestResult> {
+  const encoded = new TextEncoder().encode(JSON.stringify(obj));
+  return ingestBuffer(encoded);
 }

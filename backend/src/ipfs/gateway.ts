@@ -1,17 +1,11 @@
-// IPFS Gateway: Génère les URLs m3u8 pour streaming
+// Stub IPFS gateway helper
+// TODO: implement actual IPFS fetch logic (e.g. via public gateway or local node)
 
-export class IPFSGateway {
-  private gatewayUrl: string;
+export async function fetchFromGateway(cid: string): Promise<Uint8Array> {
+  // Placeholder implementation
+  throw new Error('fetchFromGateway not implemented');
+}
 
-  constructor(gatewayUrl: string = 'https://ipfs.io/ipfs/') {
-    this.gatewayUrl = gatewayUrl;
-  }
-
-  generatePlaylistUrl(cid: string): string {
-    return `${this.gatewayUrl}${cid}/playlist.m3u8`;
-  }
-
-  generateSegmentUrl(cid: string, segmentName: string): string {
-    return `${this.gatewayUrl}${cid}/${segmentName}`;
-  }
+export function buildGatewayUrl(cid: string, gatewayBase: string = 'https://ipfs.io/ipfs'): string {
+  return `${gatewayBase}/${cid}`;
 }

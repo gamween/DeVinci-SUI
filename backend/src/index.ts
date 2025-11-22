@@ -1,10 +1,10 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
-import livesRouter from './api/lives.js';
-import usersRouter from './api/users.js';
+import livesRouter from './api/lives';
+import usersRouter from './api/users';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT: number = Number(process.env.PORT) || 3001;
 
 app.use(cors());
 app.use(express.json());
@@ -13,7 +13,7 @@ app.use(express.json());
 app.use('/api/lives', livesRouter);
 app.use('/api/users', usersRouter);
 
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'CreatorSeal Backend API' });
 });
 

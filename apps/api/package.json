@@ -13,10 +13,11 @@
   "dependencies": {
     "@getnimbus/sui-agent-kit": "^0.1.25",
     "@mysten/sui": "1.38.0",
+    "@mysten/sui.js": "^0.54.1",
     "@twurple/api": "^7.4.0",
     "@twurple/auth": "^7.4.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "express": "^4.19.2",
     "openai": "^6.9.1"
   },

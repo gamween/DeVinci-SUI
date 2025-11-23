@@ -4,17 +4,17 @@ import { useUser } from '../../context/UserContext';
 import { LogOut } from 'lucide-react';
 
 /**
- * Bouton de connexion/déconnexion Twitch OAuth
- * Affiche le statut de connexion et l'avatar utilisateur si connecté
+ * Bouton de connexion/déconnexion Twitch OAuth (Implicit Flow)
+ * Pas besoin de backend, juste le Client ID public
+ * Le token est retourné dans l'URL fragment (#) et parsé par la page callback
  */
 export function TwitchButton() {
   const { twitchData, isTwitchConnected, disconnectTwitch } = useUser();
 
   const handleConnect = () => {
-    // Variables d'environnement Vite (avec préfixe VITE_)
     const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID;
     const redirectUri = import.meta.env.VITE_TWITCH_REDIRECT_URI;
-    
+
     if (!clientId || !redirectUri) {
       console.error('[TwitchButton] Configuration OAuth manquante:', { clientId: !!clientId, redirectUri: !!redirectUri });
       alert('Configuration Twitch OAuth incomplète. Vérifiez votre .env.local');
@@ -23,18 +23,18 @@ export function TwitchButton() {
 
     // Sauvegarder l'URL actuelle pour y retourner après l'authentification
     sessionStorage.setItem('twitch_return_url', window.location.pathname + window.location.search);
-    console.log('[TwitchButton] URL de retour sauvegardée:', window.location.pathname);
 
-    // Implicit Flow OAuth : response_type=token (pas besoin de backend)
-    // Le token sera retourné directement dans l'URL fragment (#)
+    console.log('[TwitchButton] 🚀 Démarrage du flow OAuth Twitch (Implicit Flow)');
+
+    // Implicit Flow : response_type=token (pas besoin de backend)
     const authUrl = new URL('https://id.twitch.tv/oauth2/authorize');
     authUrl.searchParams.set('client_id', clientId);
-    authUrl.searchParams.set('redirect_uri', redirectUri); // Frontend: https://localhost:3000/auth/twitch/callback
-    authUrl.searchParams.set('response_type', 'token'); // ← IMPLICIT FLOW (pas de Client Secret requis)
-    authUrl.searchParams.set('scope', 'user:read:email'); // Permissions demandées
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('response_type', 'token'); // ← IMPLICIT FLOW
+    authUrl.searchParams.set('scope', 'user:read:email');
 
-    console.log('[TwitchButton] Redirection vers Twitch OAuth (Implicit Flow):', authUrl.toString());
-    
+    console.log('[TwitchButton] Redirection vers Twitch OAuth');
+
     // Redirection vers la page d'autorisation Twitch
     window.location.href = authUrl.toString();
   };

@@ -1,5 +1,6 @@
-'use client';
+"use client";
 
+import { createPortal } from 'react-dom';
 import { X, Sparkles, Wallet as WalletIcon, Tv } from 'lucide-react';
 import { useZkLogin, SocialProvider } from '../../hooks/useZkLogin';
 import { useSlushWallet } from '../../hooks/useSlushWallet';
@@ -19,6 +20,7 @@ export function ConnectModal({ isOpen, onClose }: ConnectModalProps) {
   const { connectSlush, isInstalled } = useSlushWallet();
   const { isTwitchConnected, twitchData } = useUser();
 
+  if (typeof document === 'undefined') return null;
   if (!isOpen) return null;
 
   const handleZkLogin = async (provider: SocialProvider) => {
@@ -54,7 +56,7 @@ export function ConnectModal({ isOpen, onClose }: ConnectModalProps) {
     window.location.href = authUrl.toString();
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in-0 duration-200 overflow-y-auto">
       {/* Overlay */}
       <div 
@@ -63,7 +65,7 @@ export function ConnectModal({ isOpen, onClose }: ConnectModalProps) {
       />
 
       {/* Modal Card */}
-      <div className="relative bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 w-full max-w-md my-8 animate-in zoom-in-95 duration-200">
+      <div className="relative bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 w-full max-w-md mx-auto animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="p-6 border-b border-slate-800">
           <div className="flex items-center justify-between">
@@ -267,6 +269,7 @@ export function ConnectModal({ isOpen, onClose }: ConnectModalProps) {
           </p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

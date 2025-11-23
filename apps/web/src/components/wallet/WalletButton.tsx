@@ -25,7 +25,25 @@ export function WalletButton() {
     
     // Déconnecter le wallet Sui si utilisé
     if (loginMethod === 'slush') {
-      disconnectWallet();
+      // call mutate with callbacks so we wait for the dapp-kit cleanup
+      try {
+        disconnectWallet(undefined, {
+          onSuccess: () => {
+            // Nettoyer le context utilisateur après la déconnexion côté dapp-kit
+            disconnect();
+            setShowDropdown(false);
+          },
+          onError: () => {
+            // fallback: still clear local state
+            disconnect();
+            setShowDropdown(false);
+          }
+        });
+        return;
+      } catch (e) {
+        // fallback behaviour below
+        console.error('[WalletButton] disconnectWallet error', e);
+      }
     }
     
     // Nettoyer le context utilisateur

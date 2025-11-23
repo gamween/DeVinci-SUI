@@ -24,9 +24,12 @@ export default function TwitchCallbackPage() {
   });
 
   useEffect(() => {
-    const code = searchParams.get('code');
-    const error = searchParams.get('error');
-    const errorDescription = searchParams.get('error_description');
+    // Implicit Flow : le token est dans le fragment (#), pas dans les query params (?)
+    const hash = window.location.hash.substring(1); // Enlève le #
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get('access_token');
+    const error = searchParams.get('error') || params.get('error');
+    const errorDescription = searchParams.get('error_description') || params.get('error_description');
 
     // Vérifier les erreurs OAuth
     if (error) {
@@ -36,60 +39,58 @@ export default function TwitchCallbackPage() {
       return;
     }
 
-    if (!code) {
-      console.error('[TwitchCallback] Code manquant dans l\'URL');
+    if (!accessToken) {
+      console.error('[TwitchCallback] Access token manquant dans l\'URL fragment');
       setStatus('error');
-      setErrorMessage('Code d\'autorisation manquant');
+      setErrorMessage('Token d\'accès manquant');
       return;
     }
 
-    // Fonction pour échanger le code contre un access token
-    const exchangeCodeForToken = async () => {
+    // Fonction pour récupérer les infos utilisateur avec le token
+    const fetchUserInfo = async () => {
       try {
         setProgress(prev => ({ ...prev, auth: true }));
-        console.log('[TwitchCallback] Échange du code...');
+        console.log('[TwitchCallback] Token reçu, récupération des infos utilisateur...');
 
-        const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID || import.meta.env.NEXT_PUBLIC_TWITCH_CLIENT_ID;
+        const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID;
 
         if (!clientId) {
           throw new Error('VITE_TWITCH_CLIENT_ID non configuré');
         }
 
-        // Note: En production, cette requête DOIT être faite côté serveur
-        // pour protéger le client_secret. Ici c'est un exemple simplifié.
-        // Tu dois créer un backend endpoint pour faire cet échange.
-        
-        // Pour le développement, on va simuler la récupération des données
-        // En production, remplace par un appel à ton backend API
-        console.log('[TwitchCallback] ATTENTION: En production, utilise un backend pour sécuriser le client_secret');
-        
-        // Simuler un délai réseau
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Récupérer les infos utilisateur depuis Twitch
-        // Normalement tu ferais: const response = await fetch('https://api.twitch.tv/helix/users', ...)
-        // Mais sans backend sécurisé, on va utiliser un flow alternatif
-        
         setProgress(prev => ({ ...prev, userInfo: true }));
-        console.log('[TwitchCallback] Récupération des infos utilisateur...');
         
-        // Pour l'instant, on va extraire les infos depuis l'URL si disponibles
-        // ou demander à l'utilisateur de connecter via le backend
-        const username = searchParams.get('username') || `user_${Date.now()}`;
-        const userId = searchParams.get('userId') || String(Date.now());
-        const avatarUrl = searchParams.get('avatarUrl') || undefined;
+        // Fetch les infos utilisateur depuis l'API Twitch
+        const response = await fetch('https://api.twitch.tv/helix/users', {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Client-Id': clientId,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erreur API Twitch: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const user = data.data[0];
+
+        if (!user) {
+          throw new Error('Aucune donnée utilisateur reçue');
+        }
 
         const twitchData = {
-          username,
-          userId,
-          avatarUrl,
+          username: user.login,
+          userId: user.id,
+          avatarUrl: user.profile_image_url,
+          email: user.email,
         };
 
-        console.log('[TwitchCallback] Données Twitch:', twitchData);
+        console.log('[TwitchCallback] Données Twitch récupérées:', { username: twitchData.username, userId: twitchData.userId });
         
         // Mapper Twitch username à l'adresse Sui
         setProgress(prev => ({ ...prev, mapping: true }));
-        console.log('[TwitchCallback] Mapping:', { twitch: username, sui: suiAddress?.slice(0, 10) + '...' });
+        console.log('[TwitchCallback] Mapping:', { twitch: twitchData.username, sui: suiAddress?.slice(0, 10) + '...' });
         
         // Enregistrer dans le contexte
         connectTwitch(twitchData);
@@ -117,7 +118,7 @@ export default function TwitchCallbackPage() {
       }
     };
 
-    exchangeCodeForToken();
+    fetchUserInfo();
   }, [searchParams, connectTwitch, userRole, suiAddress, navigate]);
 
   if (status === 'error') {

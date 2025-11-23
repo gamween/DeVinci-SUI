@@ -13,14 +13,14 @@ interface ProfilePageProps {
 }
 
 export default function ProfilePage({ role }: ProfilePageProps) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
   const [profile, setProfile] = useState({
-    username: "User123",
-    email: "user@example.com",
-    bio: "Passionné de blockchain et de gaming",
-    website: "https://mywebsite.com",
-    walletAddress: "0x7a8f...9b3c",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=user123",
+    username: "",
+    email: "",
+    bio: "",
+    website: "",
+    walletAddress: "",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=default",
   });
 
   // Remplir automatiquement l'adresse du wallet depuis le contexte utilisateur (Slush ou autre)
@@ -92,10 +92,14 @@ export default function ProfilePage({ role }: ProfilePageProps) {
                   </button>
                 )}
               </div>
-              <h2 className="text-2xl font-bold text-white mt-4">{profile.username}</h2>
+              <h2 className="text-2xl font-bold text-white mt-4">
+                {profile.username || "Nom d'utilisateur"}
+              </h2>
               <div className="flex items-center gap-2 mt-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-lg">
                 <Wallet className="w-4 h-4 text-green-400" />
-                <span className="text-sm text-green-400">{profile.walletAddress}</span>
+                <span className="text-sm text-green-400">
+                  {profile.walletAddress || "Non connecté"}
+                </span>
               </div>
             </div>
 

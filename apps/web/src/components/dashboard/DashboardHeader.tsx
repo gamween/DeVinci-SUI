@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Wallet, Bell, User, LogOut, X, Check, MessageSquare, Zap, Coins, Settings, History, Gift, Shield } from "lucide-react";
 import { Button } from "../ui/button";
@@ -12,6 +12,8 @@ import {
 } from "../ui/dropdown-menu";
 import { WalletButton } from "../wallet/WalletButton";
 import { TwitchButton } from "../twitch/TwitchButton";
+import { TwitchModal } from "../twitch/TwitchModal";
+import { WalletModal } from "../wallet/WalletModal";
 import { useUser } from "../../context/UserContext";
 import { useNotifications } from "../../lib/NotificationContext";
 import { formatDistanceToNow } from "date-fns";
@@ -30,8 +32,26 @@ export function DashboardHeader({ role }: DashboardHeaderProps) {
   const navigate = useNavigate();
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification } = useNotifications();
   
+  // Modals d'authentification automatiques
+  const [showTwitchModal, setShowTwitchModal] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  
   // Vérifier si Twitch est requis pour ce rôle
   const requiresTwitch = role === 'streamer' || role === 'viewer';
+  
+  // Afficher automatiquement les modals si les connexions sont manquantes
+  useEffect(() => {
+    // Délai pour éviter d'afficher immédiatement au chargement
+    const timer = setTimeout(() => {
+      if (!isConnected) {
+        setShowWalletModal(true);
+      } else if (requiresTwitch && !isTwitchConnected) {
+        setShowTwitchModal(true);
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [isConnected, isTwitchConnected, requiresTwitch]);
   
   // Formater l'adresse pour affichage court
   const formatAddress = (address: string | null) => {
@@ -64,8 +84,19 @@ export function DashboardHeader({ role }: DashboardHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-slate-950/80 backdrop-blur-lg">
-      <div className="px-6 py-4">
+    <>
+      {/* Modals d'authentification */}
+      <TwitchModal 
+        isOpen={showTwitchModal} 
+        onClose={() => setShowTwitchModal(false)} 
+      />
+      <WalletModal 
+        isOpen={showWalletModal} 
+        onClose={() => setShowWalletModal(false)} 
+      />
+      
+      <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-slate-950/80 backdrop-blur-lg">
+        <div className="px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -217,7 +248,12 @@ export function DashboardHeader({ role }: DashboardHeaderProps) {
                     Mon profil
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800">
+                <DropdownMenuItem 
+                  className="text-slate-300 hover:text-white hover:bg-slate-800"
+                  onClick={() => {
+                    setShowWalletModal(true);
+                  }}
+                >
                   <Wallet className="w-4 h-4 mr-2" />
                   Gérer wallet
                 </DropdownMenuItem>
@@ -276,5 +312,6 @@ export function DashboardHeader({ role }: DashboardHeaderProps) {
         </div>
       </div>
     </header>
+    </>
   );
 }

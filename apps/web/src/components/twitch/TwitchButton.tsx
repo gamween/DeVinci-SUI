@@ -11,8 +11,9 @@ export function TwitchButton() {
   const { twitchData, isTwitchConnected, disconnectTwitch } = useUser();
 
   const handleConnect = () => {
-    const clientId = process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID;
-    const redirectUri = process.env.NEXT_PUBLIC_TWITCH_REDIRECT_URI;
+    // Variables d'environnement Vite (avec préfixe VITE_)
+    const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID;
+    const redirectUri = import.meta.env.VITE_TWITCH_REDIRECT_URI;
     
     if (!clientId || !redirectUri) {
       console.error('[TwitchButton] Configuration OAuth manquante:', { clientId: !!clientId, redirectUri: !!redirectUri });
@@ -20,14 +21,15 @@ export function TwitchButton() {
       return;
     }
 
-    // Construire l'URL d'autorisation Twitch OAuth
+    // Implicit Flow OAuth : response_type=token (pas besoin de backend)
+    // Le token sera retourné directement dans l'URL fragment (#)
     const authUrl = new URL('https://id.twitch.tv/oauth2/authorize');
     authUrl.searchParams.set('client_id', clientId);
-    authUrl.searchParams.set('redirect_uri', redirectUri);
-    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('redirect_uri', redirectUri); // Frontend: https://localhost:3000/auth/twitch/callback
+    authUrl.searchParams.set('response_type', 'token'); // ← IMPLICIT FLOW (pas de Client Secret requis)
     authUrl.searchParams.set('scope', 'user:read:email'); // Permissions demandées
 
-    console.log('[TwitchButton] Redirection vers Twitch OAuth:', authUrl.toString());
+    console.log('[TwitchButton] Redirection vers Twitch OAuth (Implicit Flow):', authUrl.toString());
     
     // Redirection vers la page d'autorisation Twitch
     window.location.href = authUrl.toString();

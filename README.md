@@ -2,7 +2,7 @@
 
 ## Built for DeVinci Sui Hackathon 2025
 
-Purple SUI was developed as part of the DeVinci Sui Hackathon 2025, a competition focused on building practical onchain applications on Sui. We wanted to focus on building innovative creator economy applications. The hackathon challenges developers to leverage Sui's unique capabilities—parallel execution, low latency, and programmable objects—to create real-world solutions. Purple SUI addresses the fundamental problem of creator monetization by making viewer engagement directly rewarding through blockchain-native bounties and NFT rewards.
+Purple SUI was developed as part of the DeVinci Sui Hackathon 2025, a competition focused on building practical onchain applications on Sui. We wanted to focus on building innovative creator economy applications. The hackathon challenges developers to leverage Sui's unique capabilities: parallel execution, low latency, and programmable objects; to create real-world solutions. Purple SUI addresses the fundamental problem of creator monetization by making viewer engagement directly rewarding through blockchain-native bounties and NFT rewards.
 
 Beyond creator monetization, Purple SUI serves as a discovery platform for the Sui ecosystem—showcasing promising dApps and GameFi projects through hosted live streams. Each stream highlights Sui-native applications, driving organic traffic and user adoption while educating viewers about Web3 gaming and DeFi opportunities.
 
